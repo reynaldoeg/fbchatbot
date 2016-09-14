@@ -24,15 +24,43 @@ $message_to_reply = '';
 /**
  * Some Basic rules to validate incoming messages
  */
-if(preg_match('[time|current time|now]', strtolower($message))) {
-    // Make request to Time API
-    ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
-    $result = file_get_contents("http://www.timeapi.org/utc/now?format=%25a%20%25b%20%25d%20%25I:%25M:%25S%20%25Y");
-    if($result != '') {
-        $message_to_reply = $result;
-    }
+
+$greetings = array("hola", "hi", "hallo", "hello", "good morning", "good afternoon", "good evening");
+ 
+if( in_array( strtolower($message), $greetings )){
+	$message_to_reply = 'Hola :)';
+}elseif( preg_match('[clima|temperatura|weather]', strtolower($message)) ){
+	//https://developer.yahoo.com/weather/
+	$BASE_URL = "http://query.yahooapis.com/v1/public/yql";
+	$yql_query = 'select item.condition from weather.forecast where woeid = 116545'; //Mexico City
+	$yql_query_url = $BASE_URL . "?q=" . urlencode($yql_query) . "&format=json";
+	
+	// Make call with cURL
+	$session = curl_init($yql_query_url);
+	curl_setopt($session, CURLOPT_RETURNTRANSFER,true);
+	$json = curl_exec($session);
+	
+	// Convert JSON to PHP object
+	$phpObj =  json_decode($json);
+
+	$condition = $phpObj->query->results->channel->item->condition;
+
+	$fahrenheit = $condition->temp;
+	$celsius = ($fahrenheit - 32) * (5/9);
+
+	$message_to_reply = "Temperatura Ciudad de México:";
+	$message_to_reply .= number_format($celsius, 2) . " ° C. ";
+	$message_to_reply .= $condition->text;
+
+}elseif(preg_match('[time|current time|now]', strtolower($message))) {
+	// Make request to Time API
+	ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
+	$result = file_get_contents("http://www.timeapi.org/utc/now?format=%25a%20%25b%20%25d%20%25I:%25M:%25S%20%25Y");
+	if($result != '') {
+		$message_to_reply = $result;
+	}
 } else {
-    $message_to_reply = 'Huh! what do you mean?';
+	$message_to_reply = 'No entiendo lo que dices :(';
 }
 //API Url
 $url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$access_token;
