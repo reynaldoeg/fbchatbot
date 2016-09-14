@@ -54,11 +54,9 @@ if( in_array( strtolower($message), $greetings )){
 	$fahrenheit = $condition->temp;
 	$celsius = ($fahrenheit - 32) * (5/9);
 
-	$message_to_reply = "Temperatura Ciudad de México:";
-	$message_to_reply .= number_format($celsius, 2) . " ° C. ";
-	$message_to_reply .= $condition->text;
-
-	send_response($access_token, $msg, $sender, $message_to_reply);
+	send_response($access_token, $msg, $sender, "Temperatura Ciudad de México:");
+	send_response($access_token, $msg, $sender, number_format($celsius, 2) . " ° C. ");
+	send_response($access_token, $msg, $sender, $condition->text);
 
 }elseif(preg_match('[time|current time|now|hora|fecha]', strtolower($message))) {
 	// Make request to Time API
