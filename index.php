@@ -64,9 +64,34 @@ if( in_array( strtolower($message), $greetings ) || in_array( strtolower($messag
 	$fahrenheit = $condition->temp;
 	$celsius = ($fahrenheit - 32) * (5/9);
 
+	$weather = array(
+		"Hot" => "Caluroso",
+		"Warm" => "Calido",
+		"Cold" => "Frio",
+		"Sunny" => "Soleado",
+		"Cloudy" => "Nublado", 
+		"Partly Cloudy" => "Parcialmente nublado",
+	);
+
+	$weather_advice = array(
+		"Hot" => "Acuerdate del bloqueador",
+		"Warm" => "Acuerdate del bloqueador",
+		"Cold" => "No se te olvide el abrigo",
+		"Sunny" => "Acuerdate del bloqueador",
+		"Cloudy" => "No se te olvide el paraguas", 
+		"Partly Cloudy" => "No se te olvide el paraguas",
+	);
+
 	send_response($access_token, $msg, $sender, "Temperatura Ciudad de México:");
 	send_response($access_token, $msg, $sender, number_format($celsius, 2) . " ° C. ");
-	send_response($access_token, $msg, $sender, $condition->text);
+
+	if( array_key_exists($condition->text, $weather)){
+		send_response($access_token, $msg, $sender, $weather[$condition->text]);
+		send_response($access_token, $msg, $sender, $weather_advice[$condition->text]);
+	}else{
+		send_response($access_token, $msg, $sender, $condition->text);
+	}
+	
 
 }elseif(preg_match('[time|current time|now|hora|fecha]', strtolower($message))) {
 	// Make request to Time API
