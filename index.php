@@ -23,15 +23,25 @@ $sender  = $input['entry'][0]['messaging'][0]['sender']['id'];
 $message = $input['entry'][0]['messaging'][0]['message']['text'];
 
 $message_to_reply = '';
+
 /**
  * Some Basic rules to validate incoming messages
  */
 
-$greetings = array("hola", "hi", "hallo", "hello", "good morning", "good afternoon", "good evening");
+$greetings = array("hi", "hallo", "hello", "good morning", "good afternoon", "good evening");
+$saludos = array("hola", "buenos dias", "buenas tardes", "buenas noches");
+$farewells = array("bye", "good bye", "good night", "see you", "see you later", "see you tomorrow", "see you soon");
+$despedidas = array("adios", "nos vemos", "te cuidas", "hasta pronto");
  
-if( in_array( strtolower($message), $greetings )){
+if( in_array( strtolower($message), $greetings ) || in_array( strtolower($message), $saludos ) ){
 	
 	$message_to_reply = 'Hola :)';
+
+	send_response($access_token, $msg, $sender, $message_to_reply);
+
+}elseif( in_array( strtolower($message), $farewells ) || in_array( strtolower($message), $despedidas ) ){
+	
+	$message_to_reply = 'bye bye :)';
 
 	send_response($access_token, $msg, $sender, $message_to_reply);
 
