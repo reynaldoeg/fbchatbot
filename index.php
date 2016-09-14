@@ -32,19 +32,22 @@ $greetings = array("hi", "hallo", "hello", "good morning", "good afternoon", "go
 $saludos = array("hola", "buenos dias", "buenas tardes", "buenas noches");
 $farewells = array("bye", "good bye", "good night", "see you", "see you later", "see you tomorrow", "see you soon");
 $despedidas = array("adios", "nos vemos", "te cuidas", "hasta pronto");
- 
+
+//=====Greeting=====
 if( in_array( strtolower($message), $greetings ) || in_array( strtolower($message), $saludos ) ){
 	
 	$message_to_reply = 'Hola :)';
 
 	send_response($access_token, $msg, $sender, $message_to_reply);
 
+//=====Farewells=====
 }elseif( in_array( strtolower($message), $farewells ) || in_array( strtolower($message), $despedidas ) ){
 	
 	$message_to_reply = 'bye bye :)';
 
 	send_response($access_token, $msg, $sender, $message_to_reply);
 
+//=====Weather=====
 }elseif( preg_match('[clima|temperatura|weather]', strtolower($message)) ){
 	//https://developer.yahoo.com/weather/
 	$BASE_URL = "http://query.yahooapis.com/v1/public/yql";
@@ -92,8 +95,8 @@ if( in_array( strtolower($message), $greetings ) || in_array( strtolower($messag
 		send_response($access_token, $msg, $sender, $condition->text);
 	}
 	
-
-}elseif(preg_match('[time|current time|now|hora|fecha]', strtolower($message))) {
+//=====Date=====
+} elseif(preg_match('[time|current time|now|hora|fecha]', strtolower($message))) {
 	// Make request to Time API
 	ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
 	$result = file_get_contents("http://www.timeapi.org/utc/now?format=%25a%20%25b%20%25d%20%25I:%25M:%25S%20%25Y");
@@ -103,14 +106,60 @@ if( in_array( strtolower($message), $greetings ) || in_array( strtolower($messag
 
 	send_response($access_token, $msg, $sender, $message_to_reply);
 
+//=====Yahoo Answers=====
 } else {
-	
-	$message_to_reply = 'No entiendo lo que dices :(';
-	send_response($access_token, $msg, $sender, $message_to_reply);
-	$message_to_reply = 'Quieres que te diga el clima o la hora';
-	send_response($access_token, $msg, $sender, $message_to_reply);
-}
 
+	try{
+
+		require('simple_html_dom.php');
+
+		$BASE_URL = "https://espanol.answers.search.yahoo.com/search";
+		$search_url = $BASE_URL . "?fr=uh3_answers_vert_gs&type=2button&p=" . urlencode($message);
+		
+		//Get all answers
+		$html = file_get_html($search_url);
+		$ol = $html->find('ol[class=searchCenterMiddle]');
+
+		if( count($ol) > 0 ){
+
+			$li = $ol[0]->find('li[class=first]');
+			$link = $li[0]->find('a');
+			$new_url = $link[0]->href;
+
+			//Get first answer
+			$html = file_get_html($new_url);
+			$div = $html->find('div[itemprop=acceptedAnswer]');
+
+			if( count($div) > 0 ){
+
+				$span = $div[0]->find('span[itemprop=text]');
+				$answer = $span[0]->plaintext;
+
+				//Clean answer
+				$answer = clean_string($answer);
+				$paragraph_answer = explode("\n", $answer);
+
+				foreach ($paragraph_answer as $p) {
+					if ($p == ' '){
+						continue;
+					}
+					send_response($access_token, $msg, $sender, trim($p));
+				}
+			}else{
+				whoops_message();
+			}
+
+		}else{
+			whoops_message();
+		}
+
+	}catch(Exception $e){
+
+		whoops_message();
+
+	}
+
+}
 
 //API Url
 function send_response($access_token, $msg, $sender, $message_to_reply){
@@ -143,3 +192,26 @@ function send_response($access_token, $msg, $sender, $message_to_reply){
 	}
 
 }
+
+
+function clean_string($string){
+
+	$string = trim($string); //Eliminar espacios en blanco al inicio y al final
+	$string = str_replace("\'","",$string); //Eliminar las comillas simples (')
+	$string = str_replace('\"',"",$string); //Eliminar las comillas dobles (")
+	$string = str_replace("\r", " ", $string); //Eliminar retornos de carro
+	$string = str_replace("   "," ",$string); //Quitar espacios multiples
+	$string = str_replace("  "," ",$string);
+
+	return $string;
+}
+
+function whoops_message(){
+
+	$message_to_reply = 'No entiendo lo que dices :(';
+	send_response($access_token, $msg, $sender, $message_to_reply);
+	$message_to_reply = 'Quieres que te diga el clima o la hora';
+	send_response($access_token, $msg, $sender, $message_to_reply);
+
+}
+
