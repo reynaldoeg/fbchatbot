@@ -75,6 +75,8 @@ class ChatBot{
 	 */
 	public function weather(){
 
+		$this->sender_action();
+		
 		if( preg_match('[clima|temperatura|weather]', strtolower($this->message)) ){
 			//https://developer.yahoo.com/weather/
 			$BASE_URL = "http://query.yahooapis.com/v1/public/yql";
@@ -143,6 +145,8 @@ class ChatBot{
 	 */
 	public function current_time(){
 
+		$this->sender_action();
+
 		if(preg_match('[time|current time|now|hora|fecha]', strtolower($this->message))) {
 			// Make request to Time API
 			ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
@@ -170,6 +174,8 @@ class ChatBot{
 	 * @return true if it find the response, false otherwise.
 	 */
 	public function yahoo_answer(){
+
+		$this->sender_action();
 
 		try{
 
@@ -210,7 +216,7 @@ class ChatBot{
 					}
 
 					return true;
-					
+
 				}else{
 					return false;
 				}
@@ -226,7 +232,6 @@ class ChatBot{
 		}
 
 	}
-
 
 	/**
 	 * Sends the response to the user.
@@ -323,6 +328,43 @@ class ChatBot{
 
 		$this->send_response('No entiendo lo que dices :(');
 		$this->send_response('Quieres que te diga el clima o la hora');
+
+	}
+
+	/**
+	 * Configure script indicators or send read receipts to warn users who are processing your request.
+	 *
+	 * @access public
+	 *
+	 * @param  String - "typing_on" ("typing_off"  o  "mark_seen")
+	 * @return void.
+	 */
+	public function sender_action($type='typing_on'){
+
+		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;
+		//Initiate cURL.
+		$ch = curl_init($url);
+		//The JSON data.
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"sender_action": "'.$type.'",
+		}';
+
+		//Encode the array into JSON.
+		$jsonDataEncoded = $jsonData;
+		//Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POST, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+		//Execute the request
+		if(!empty($this->msg)){
+		    $result = curl_exec($ch);
+		}
 
 	}
 
