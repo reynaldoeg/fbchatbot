@@ -1,5 +1,6 @@
 <?php
 require_once('env.php');
+require_once('simple_html_dom.php');
 
 class ChatBot{
 
@@ -160,7 +161,73 @@ class ChatBot{
 
 	}
 
-	
+	/**
+	 * Answers a question (Yahoo ansers).
+	 *
+	 * @access public
+	 *
+	 * @param -----
+	 * @return true if it find the response, false otherwise.
+	 */
+	public function yahoo_answer(){
+
+		try{
+
+			$BASE_URL = "https://espanol.answers.search.yahoo.com/search";
+			$search_url = $BASE_URL . "?fr=uh3_answers_vert_gs&type=2button&p=" . urlencode($this->message);
+
+			//Get all answers
+			$html = file_get_html($search_url);
+			$ol = $html->find('ol[class=searchCenterMiddle]');
+
+			if( count($ol) > 0 ){
+
+				$li = $ol[0]->find('li[class=first]');
+				$link = $li[0]->find('a');
+				$new_url = $link[0]->href;
+
+				//Get first answer
+				$html = file_get_html($new_url);
+				$div = $html->find('div[itemprop=acceptedAnswer]');
+
+				if( count($div) > 0 ){
+
+					$span = $div[0]->find('span[itemprop=text]');
+					$answer = $span[0]->plaintext;
+
+					//Clean answer
+					$answer = $this->clean_string($answer);
+					$paragraph_answer = explode("\n", $answer);
+
+					foreach ($paragraph_answer as $p) {
+						$i = 1;
+						if ($p == ' '){
+							continue;
+						}
+						$this->shorten_response(trim($p));
+						$i++;
+						if( $i >= 8) break;
+					}
+
+					return true;
+					
+				}else{
+					return false;
+				}
+
+			}else{
+				return false;
+			}
+
+		}catch(Exception $e){
+
+			return false;
+
+		}
+
+	}
+
+
 	/**
 	 * Sends the response to the user.
 	 *
