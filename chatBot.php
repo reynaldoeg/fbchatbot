@@ -195,10 +195,12 @@ class ChatBot{
 
 			$prediction = $html->find('div[class=inside]')[0]->find('p')[1]->plaintext;
 
+			$this->send_image("http://www.que.es/archivos/201502/".$sign."_nor-672xXx80.jpg");
+
 			$this->send_response($title);
 			$this->send_response($date);
 			//$this->send_response($img);
-			$this->send_response($prediction);
+			$this->shorten_response($prediction);
 
 			return true;
 
@@ -407,6 +409,44 @@ class ChatBot{
 			},
 			"sender_action": "'.$type.'",
 		}';
+
+		//Encode the array into JSON.
+		$jsonDataEncoded = $jsonData;
+		//Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POST, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+		//Execute the request
+		if(!empty($this->msg)){
+		    $result = curl_exec($ch);
+		}
+
+	}
+
+	public function send_image($url_img){
+
+		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;
+		//Initiate cURL.
+		$ch = curl_init($url);
+		//The JSON data.
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"message":{
+				"attachment":{
+					"type":"image",
+					"payload":{
+						"url":"'.$url_img.'"
+					}
+				}
+			}
+		}';
+
+		//"sender_action": "typing_on" ("typing_off"  o  "mark_seen")
 
 		//Encode the array into JSON.
 		$jsonDataEncoded = $jsonData;
