@@ -33,8 +33,10 @@ if( $bot->greeting() ){
 	//=====Weather=====
 } elseif( $bot->current_time() ) {
 	//=====Date=====
+} elseif( $bot->horoscope() ) {
+	//=====Horoscope=====
 } elseif( $bot->yahoo_answer() ) {
-	
+	//=====Answers=====
 } else {
 	$bot->whoops_message();
 }

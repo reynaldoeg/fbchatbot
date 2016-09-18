@@ -165,6 +165,52 @@ class ChatBot{
 
 	}
 
+	public function horoscope(){
+
+		$this->sender_action();
+
+		if( preg_match('[horoscopo|horoscope|zodiac]', strtolower($this->message)) ){
+
+			$sign = 'escorpio';
+			if( strpos(strtolower($this->message), "aries") != false ){ $sign = 'aries'; }
+			elseif( strpos(strtolower($this->message), "tauro") != false ){ $sign = 'tauro'; }
+			elseif( strpos(strtolower($this->message), "geminis") != false ){ $sign = 'geminis'; }
+			elseif( strpos(strtolower($this->message), "cancer") != false ){ $sign = 'cancer'; }
+			elseif( strpos(strtolower($this->message), "leo") != false ){ $sign = 'leo'; }
+			elseif( strpos(strtolower($this->message), "virgo") != false ){ $sign = 'virgo'; }
+			elseif( strpos(strtolower($this->message), "libra") != false ){ $sign = 'libra'; }
+			elseif( strpos(strtolower($this->message), "escorpio") != false ){ $sign = 'escorpio'; }
+			elseif( strpos(strtolower($this->message), "sagitario") != false ){ $sign = 'sagitario'; }
+			elseif( strpos(strtolower($this->message), "capricornio") != false ){ $sign = 'capricornio'; }
+			elseif( strpos(strtolower($this->message), "acuario") != false ){ $sign = 'acuario'; }
+			elseif( strpos(strtolower($this->message), "piscis") != false ){ $sign = 'piscis'; }
+
+			$search_url = "http://horoscopo.abc.es/signos-zodiaco-".$sign."/horoscopo-hoy.html";
+
+			$html = file_get_html($search_url);
+			
+			$title = $html->find('h1[class=title]')[0]->plaintext;
+			//$img = $html->find('header')[1]->find('img')[0]->src;
+			$date = $html->find('header')[1]->find('p')[0]->plaintext;
+
+			$prediction = $html->find('div[class=inside]')[0]->find('p')[1]->plaintext;
+
+			$this->send_response($title);
+			$this->send_response($date);
+			//$this->send_response($img);
+			$this->send_response($prediction);
+
+			return true;
+
+		}else{
+
+			return false;
+
+		}
+
+			
+	}
+
 	/**
 	 * Answers a question (Yahoo ansers).
 	 *
@@ -186,16 +232,23 @@ class ChatBot{
 			$html = file_get_html($search_url);
 			$ol = $html->find('ol[class=searchCenterMiddle]');
 
+			//$this->send_response(count($ol));
+
 			if( count($ol) > 0 ){
 
 				$li = $ol[0]->find('li[class=first]');
 				$link = $li[0]->find('a');
 				$new_url = $link[0]->href;
 
+				//$this->send_response($new_url);
+				
+
 				//Get first answer
 				$html = file_get_html($new_url);
 				$div = $html->find('div[itemprop=acceptedAnswer]');
 
+				//$this->send_response(count($div));
+				
 				if( count($div) > 0 ){
 
 					$span = $div[0]->find('span[itemprop=text]');
@@ -204,6 +257,9 @@ class ChatBot{
 					//Clean answer
 					$answer = $this->clean_string($answer);
 					$paragraph_answer = explode("\n", $answer);
+
+					//$this->send_response(count($paragraph_answer));
+					//return true;
 
 					foreach ($paragraph_answer as $p) {
 						$i = 1;
