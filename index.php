@@ -27,16 +27,42 @@ $message = $bot->message;
  * Some Basic rules to validate incoming messages
  */
 
-if( $bot->greeting() ){
-	//=====Greeting=====
-} elseif( $bot->weather() ){
-	//=====Weather=====
-} elseif( $bot->current_time() ) {
-	//=====Date=====
-} elseif( $bot->horoscope() ) {
-	//=====Horoscope=====
-} elseif( $bot->yahoo_answer() ) {
-	//=====Answers=====
-} else {
-	$bot->whoops_message();
+switch ($bot->messagingEvent) {
+	case 'receivedMessage':
+		
+		switch ($bot->type_message_received) {
+			case 'message':
+				
+				if( $bot->greeting() ){
+					//=====Greeting=====
+				} elseif( $bot->weather() ){
+					//=====Weather=====
+				} elseif( $bot->current_time() ) {
+					//=====Date=====
+				} elseif( $bot->horoscope() ) {
+					//=====Horoscope=====
+				} elseif( $bot->yahoo_answer() ) {
+					//=====Answers=====
+				} else {
+					$bot->whoops_message();
+				}
+				break;
+			case 'attachment':
+				$bot->send_response("Archivo adjunto");
+				break;
+			default:
+				$bot->whoops_message();
+				break;
+		}
+
+		break;
+	case 'receivedPostback':
+		$bot->send_response("Postback");
+		break;
+	case 'receivedDeliveryConfirmation':
+		$bot->send_response("Delivery");
+		break;
+	default:
+		$bot->whoops_message();
+		break;
 }

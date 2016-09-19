@@ -11,16 +11,20 @@ class ChatBot{
 
 	public $input = '';
 
-	public $sender = '';
-	public $recipient = '';
-	public $timestamp = '';
+	public $messagingEvent = '';
+	public $type_message_received = '';
+
+	
+	public $sender = ''; //User id
+	public $recipient = ''; //Page id
+	public $timestamp = ''; //Current time
 
 	public $msg = '';
-	public $mid = '';
-	public $seq = '';
+	public $mid = '';  //Message identifier
+	public $seq = '';  //Message sequence number
 
-	public $message = '';
-	public $attachments = '';
+	public $message = ''; //Text message
+	public $attachments = ''; //Array containing attachment data
 	public $attachmentType = '';
 	public $attachmentPayload = '';
 
@@ -42,12 +46,9 @@ class ChatBot{
 		$this->recipient = $messaging['recipient']['id'];
 		$this->timestamp = $messaging['timestamp'];
 
-
-		//$this->send_response($this->sender);
-		//$this->send_response($this->recipient);
-		//$this->send_response($this->timestamp);
-
 		if( isset( $messaging['message'] ) ){
+
+			$this->messagingEvent = 'receivedMessage';
 			
 			$this->msg = $messaging['message'];
 			$this->mid = $messaging['message']['mid'];
@@ -55,45 +56,25 @@ class ChatBot{
 			
 			if( isset( $messaging['message']['text'] ) )
 			{
+				$this->type_message_received = 'message';
 				$this->message = $messaging['message']['text'];
-				//$this->send_response($this->message);
-				
 			}
 			elseif( isset( $messaging['message']['attachments'] ) ){
 				
+				$this->type_message_received = 'attachment';
+
 				$this->attachments = $messaging['message']['attachments'];
 				$this->attachmentType = $messaging['message']['attachments'][0]['type'];
 				$this->attachmentPayload = $messaging['message']['attachments'][0]['payload'];
 
-				/*switch ($messaging['message']['attachments'][0]['type']) {
-					case 'image':
-						$this->send_response("Bonita imagen");
-						break;
-					case 'audio':
-						$this->send_response("Audio");
-						break;
-					case 'video':
-						$this->send_response("Video");
-						break;
-					case 'file ':
-						$this->send_response("Archivo");
-						break;
-					case 'location':
-						$this->send_response("Ubicación");
-						break;
-					default:
-						$this->send_response("No sé que tipo de archivo es :(");
-						$this->send_response($messaging['message']['attachments']['type']);
-						break;
-				}*/
 			}
 
 		} elseif( isset( $messaging['postback'] ) ){
-			$this->send_response("Postback");
+			$this->messagingEvent = 'receivedPostback';
 		} elseif( isset( $messaging['delivery'] ) ){
-			$this->send_response("Delivery");
+			$this->messagingEvent = 'receivedDeliveryConfirmation';
 		} else {
-			$this->whoops_message();
+			$this->messagingEvent = '';
 		}
 	}
 
@@ -202,7 +183,7 @@ class ChatBot{
 	}
 
 	/**
-	 * Write the current time.
+	 * Respond the current time.
 	 *
 	 * @access public
 	 *
@@ -231,6 +212,14 @@ class ChatBot{
 
 	}
 
+	/**
+	 * Respond the horoscope.
+	 *
+	 * @access public
+	 *
+	 * @param -----
+	 * @return true if it recognizes the horoscope is requested, false otherwise.
+	 */
 	public function horoscope(){
 
 		$this->sender_action();
@@ -280,7 +269,7 @@ class ChatBot{
 	}
 
 	/**
-	 * Answers a question (Yahoo ansers).
+	 * Answers a question (Yahoo answers).
 	 *
 	 * @access public
 	 *
