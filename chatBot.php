@@ -11,14 +11,23 @@ class ChatBot{
 
 	public $input = '';
 
-	public $msg = '';
 	public $sender = '';
+	public $recipient = '';
+	public $timestamp = '';
+
+	public $msg = '';
+	public $mid = '';
+	public $seq = '';
+
 	public $message = '';
+	public $attachments = '';
+	public $attachmentType = '';
+	public $attachmentPayload = '';
 
 	public $message_to_reply = '';
 
 	/**
-	 * Set de sender id and the message received.
+	 * Set the sender id and the message received.
 	 *
 	 * @access public
 	 *
@@ -26,9 +35,66 @@ class ChatBot{
 	 * @return Void.
 	 */
 	public function set_data_input(){
-		$this->msg = $this->input['entry'][0]['messaging'][0]['message'];
-		$this->sender = $this->input['entry'][0]['messaging'][0]['sender']['id'];
-		$this->message = $this->input['entry'][0]['messaging'][0]['message']['text'];
+
+		$messaging = $this->input['entry'][0]['messaging'][0];
+
+		$this->sender = $messaging['sender']['id'];
+		$this->recipient = $messaging['recipient']['id'];
+		$this->timestamp = $messaging['timestamp'];
+
+
+		//$this->send_response($this->sender);
+		//$this->send_response($this->recipient);
+		//$this->send_response($this->timestamp);
+
+		if( isset( $messaging['message'] ) ){
+			
+			$this->msg = $messaging['message'];
+			$this->mid = $messaging['message']['mid'];
+			$this->seq = $messaging['message']['seq'];
+			
+			if( isset( $messaging['message']['text'] ) )
+			{
+				$this->message = $messaging['message']['text'];
+				//$this->send_response($this->message);
+				
+			}
+			elseif( isset( $messaging['message']['attachments'] ) ){
+				
+				$this->attachments = $messaging['message']['attachments'];
+				$this->attachmentType = $messaging['message']['attachments'][0]['type'];
+				$this->attachmentPayload = $messaging['message']['attachments'][0]['payload'];
+
+				/*switch ($messaging['message']['attachments'][0]['type']) {
+					case 'image':
+						$this->send_response("Bonita imagen");
+						break;
+					case 'audio':
+						$this->send_response("Audio");
+						break;
+					case 'video':
+						$this->send_response("Video");
+						break;
+					case 'file ':
+						$this->send_response("Archivo");
+						break;
+					case 'location':
+						$this->send_response("Ubicación");
+						break;
+					default:
+						$this->send_response("No sé que tipo de archivo es :(");
+						$this->send_response($messaging['message']['attachments']['type']);
+						break;
+				}*/
+			}
+
+		} elseif( isset( $messaging['postback'] ) ){
+			$this->send_response("Postback");
+		} elseif( isset( $messaging['delivery'] ) ){
+			$this->send_response("Delivery");
+		} else {
+			$this->whoops_message();
+		}
 	}
 
 	/**
