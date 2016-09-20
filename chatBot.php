@@ -269,6 +269,48 @@ class ChatBot{
 	}
 
 	/**
+	 * Respond the Exchange Rate.
+	 *
+	 * @access public
+	 *
+	 * @param -----
+	 * @return true if it recognizes the exchange rate is requested, false otherwise.
+	 */
+	public function exchange_rate(){
+
+		$this->sender_action();
+
+		if( preg_match('[tipo de cambio|como esta el dolar|precio del dolar|precio del euro]', strtolower($this->message)) ){
+
+			//http://fixer.io/
+			$api_url = "http://api.fixer.io/latest?base=MXN";
+
+			// Make call with cURL
+			$session = curl_init($api_url);
+			curl_setopt($session, CURLOPT_RETURNTRANSFER,true);
+			$json = curl_exec($session);
+			
+			// Convert JSON to PHP object
+			$phpObj =  json_decode($json);
+
+			$base = $phpObj->base;
+			$date = $phpObj->date;
+			$dolar = 1/($phpObj->rates->USD);
+			$euro = 1/($phpObj->rates->EUR);
+
+			$this->send_response("Tip de cambio de hoy " . $date);
+			$this->send_response("Dolar:  $ " . number_format($dolar, 2));
+			$this->send_response("Euro:  $ " . number_format($euro, 2));
+
+			return true;
+
+		} else {
+			return false;
+		}
+
+	}
+
+	/**
 	 * Answers a question (Yahoo answers).
 	 *
 	 * @access public
@@ -481,6 +523,14 @@ class ChatBot{
 
 	}
 
+	/**
+	 * Send an image.
+	 *
+	 * @access public
+	 *
+	 * @param  String - image url 
+	 * @return void.
+	 */
 	public function send_image($url_img){
 
 		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;

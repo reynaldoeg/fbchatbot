@@ -18,13 +18,13 @@ if ($bot->hub_verify_token === $bot->verify_token) {
 $bot->input   = json_decode(file_get_contents('php://input'), true);
 $bot->set_data_input();
 
-$msg = $bot->msg;
-$sender = $bot->sender;
-$message = $bot->message;
+//$msg = $bot->msg;
+//$sender = $bot->sender;
+//$message = $bot->message;
 
 
 /**
- * Some Basic rules to validate incoming messages
+ * Some Rules to validate incoming messages
  */
 
 switch ($bot->messagingEvent) {
@@ -41,6 +41,8 @@ switch ($bot->messagingEvent) {
 					//=====Date=====
 				} elseif( $bot->horoscope() ) {
 					//=====Horoscope=====
+				} elseif( $bot->exchange_rate() ) {
+					//=====Exchange rate=====
 				} elseif( $bot->yahoo_answer() ) {
 					//=====Answers=====
 				} else {
