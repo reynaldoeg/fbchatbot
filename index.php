@@ -1,5 +1,7 @@
 <?php
 
+header("HTTP/1.1 200 OK");
+
 require_once('chatBot.php');
 
 
