@@ -194,17 +194,26 @@ class ChatBot{
 
 		$this->sender_action();
 
-		if(preg_match('[time|current time|now|hora|fecha]', strtolower($this->message))) {
+		$whatime = array("que hora es", "me das la hora", "que hora son", "que dia es hoy", "que fecha es hoy", "a que estamos");
+
+		//if(preg_match('[time|current time|now|hora|fecha]', strtolower($this->message))) {
+		if( in_array( strtolower($this->message), $whatime) ){
+
 			// Make request to Time API
 			ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
-			$result = file_get_contents("http://www.timeapi.org/utc/now?format=%25a%20%25b%20%25d%20%25I:%25M:%25S%20%25Y");
-			if($result != '') {
-				$message_to_reply = $result;
+			$api_time = file_get_contents("http://www.timeapi.org/cdt/now");
+			if($api_time != '') {
+
+				$date = strtotime($api_time);
+				$this->send_response("Fecha y hora Zona Central (CDT) - Ciudad de México");
+				$this->send_response( date("D d / M / Y", $date) );
+				$this->send_response( date("h:i:s a", $date) );
+
+				return true;
+			
+			}else{
+				return false;
 			}
-
-			$this->send_response($message_to_reply);
-
-			return true;
 
 		}else{
 			return false;
