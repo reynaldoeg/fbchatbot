@@ -340,23 +340,20 @@ class ChatBot{
 			$html = file_get_html($search_url);
 			$ol = $html->find('ol[class=searchCenterMiddle]');
 
-			//$this->send_response(count($ol));
-
 			if( count($ol) > 0 ){
 
 				$li = $ol[0]->find('li[class=first]');
 				$link = $li[0]->find('a');
 				$new_url = $link[0]->href;
 
-				//$this->send_response($new_url);
-				
-
 				//Get first answer
 				$html = file_get_html($new_url);
+				
+				$question = $html->find('h1[itemprop=name]')[0]->plaintext;
+				$this->shorten_response('Respuesta a: ' . trim($question));
+
 				$div = $html->find('div[itemprop=acceptedAnswer]');
 
-				//$this->send_response(count($div));
-				
 				if( count($div) > 0 ){
 
 					$span = $div[0]->find('span[itemprop=text]');
@@ -365,9 +362,6 @@ class ChatBot{
 					//Clean answer
 					$answer = $this->clean_string($answer);
 					$paragraph_answer = explode("\n", $answer);
-
-					//$this->send_response(count($paragraph_answer));
-					//return true;
 
 					foreach ($paragraph_answer as $p) {
 						$i = 1;
@@ -378,6 +372,8 @@ class ChatBot{
 						$i++;
 						if( $i >= 8) break;
 					}
+
+					$this->shorten_response('¿Si es lo que me preguntabas? ;)');
 
 					return true;
 
