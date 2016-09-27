@@ -45,6 +45,8 @@ switch ($bot->messagingEvent) {
 					//=====Horoscope=====
 				} elseif( $bot->exchange_rate() ) {
 					//=====Exchange rate=====
+				} elseif( $bot->basic_questions() ){
+					//=====Basic Questions=====
 				} elseif( $bot->yahoo_answer() ) {
 					//=====Answers=====
 				} else {

@@ -112,6 +112,30 @@ class ChatBot{
 
 	}
 
+	public function basic_questions(){
+		
+		$this->sender_action();
+
+		$questions = array(
+			"como estas" => "Excelente ¿y tú?",
+			"como te llamas" => "me llamo bot",
+			"eres un robot" => "eso no importa",
+			"cuantos años tienes" => "yo no cumplo años",
+			"me quieres" => "buscas el amor en el sitio equivocado",
+			"eres hombre o mujer" => "no tengo sexo"
+		);
+
+		$msg = $this->clean_string_question($this->message);
+
+		if( array_key_exists($msg, $questions) ){
+			$this->send_response($questions[$msg]);
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
 	/**
 	 * Write the current weather.
 	 *
@@ -472,6 +496,35 @@ class ChatBot{
 		$string = str_replace("\r", " ", $string); //Eliminar retornos de carro
 		$string = str_replace("   "," ",$string); //Quitar espacios multiples
 		$string = str_replace("  "," ",$string);
+
+		return $string;
+	}
+
+	/**
+	 * Clean the text to send of quotes, spaces and line breaks.
+	 *
+	 * @access public
+	 *
+	 * @param  String - $msg
+	 * @return String.
+	 */
+	public function clean_string_question($string){
+
+		$string = trim($string); //Eliminar espacios en blanco al inicio y al final
+		$string = str_replace("\'","",$string); //Eliminar las comillas simples (')
+		$string = str_replace('\"',"",$string); //Eliminar las comillas dobles (")
+		$string = str_replace("\r", " ", $string); //Eliminar retornos de carro
+		$string = str_replace("   "," ",$string); //Quitar espacios multiples
+		$string = str_replace("  "," ",$string);
+		
+		$unwanted_array = array('Š'=>'S', 'š'=>'s', 'Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C', 'È'=>'E', 'É'=>'E',
+                            'Ê'=>'E', 'Ë'=>'E', 'Ì'=>'I', 'Í'=>'I', 'Î'=>'I', 'Ï'=>'I', 'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O', 'Ö'=>'O', 'Ø'=>'O', 'Ù'=>'U',
+                            'Ú'=>'U', 'Û'=>'U', 'Ü'=>'U', 'Ý'=>'Y', 'Þ'=>'B', 'ß'=>'Ss', 'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a', 'ä'=>'a', 'å'=>'a', 'æ'=>'a', 'ç'=>'c',
+                            'è'=>'e', 'é'=>'e', 'ê'=>'e', 'ë'=>'e', 'ì'=>'i', 'í'=>'i', 'î'=>'i', 'ï'=>'i', 'ð'=>'o', 'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o',
+                            'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y', '?'=>'', '¿'=>'', '!'=>'', '¡'=>'' );
+
+		$string = strtr( $string, $unwanted_array );
+
 
 		return $string;
 	}
