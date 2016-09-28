@@ -483,7 +483,7 @@ class ChatBot{
 	}
 
 	/**
-	 * Sends the response to the user.
+	 * Send a text message using the Send API.
 	 *
 	 * @access public
 	 *
@@ -492,10 +492,6 @@ class ChatBot{
 	 */
 	public function send_response($message_to_reply){
 
-		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;
-		//Initiate cURL.
-		$ch = curl_init($url);
-		//The JSON data.
 		$jsonData = '{
 			"recipient":{
 				"id":"'.$this->sender.'"
@@ -504,23 +500,142 @@ class ChatBot{
 				"text":"'.$message_to_reply.'"
 			}
 		}';
+		//"metadata": "DEVELOPER_DEFINED_METADATA"
+		callSendAPI( $jsonData );
+	}
 
-		//"sender_action": "typing_on" ("typing_off"  o  "mark_seen")
+	/**
+	 * Send an image using the Send API.
+	 *
+	 * @access public
+	 *
+	 * @param  String - image url 
+	 * @return void.
+	 */
+	public function send_image($url_img){
 
-		//Encode the array into JSON.
-		$jsonDataEncoded = $jsonData;
-		//Tell cURL that we want to send a POST request.
-		curl_setopt($ch, CURLOPT_POST, 1);
-		//Attach our encoded JSON string to the POST fields.
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"message":{
+				"attachment":{
+					"type":"image",
+					"payload":{
+						"url":"'.$url_img.'"
+					}
+				}
+			}
+		}';
+		callSendAPI( $jsonData );
+	}
+
+	/**
+	 * Send a media file using the Send API.
+	 *
+	 * @access public
+	 *
+	 * @param  String - media url 
+	 * @param  String - type: image, audio, video, file 
+	 * @return void.
+	 */
+	public function send_media($url_media, $type = 'image'){
+
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"message":{
+				"attachment":{
+					"type":"'.$type.'",
+					"payload":{
+						"url":"'.$url_media.'"
+					}
+				}
+			}
+		}';
+		callSendAPI( $jsonData );
+
+	}
+
+	/**
+	 * Send a button message using the Send API.
+	 *
+	 * @access public
+	 *
+	 * @param  TODO - array
+	 * @return void.
+	 */
+	public function sendButtonMessage(){
+
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"message":{
+				"attachment":{
+					"type":"template",
+					"payload":{
+						"template_type":"button",
+						"text":"This is test text",
+						"buttons":[{
+							"type": "web_url",
+							"url": "https://www.oculus.com/en-us/rift/",
+							"Title": "Open Web URL"
+						},{
+							"type": "postback",
+							"Title": "Trigger Postback",
+							"payload": "DEVELOPED_DEFINED_PAYLOAD"
+						},{
+							"type": "phone_number",
+							"Title": "Call Phone Number",
+							"payload": "+16505551234"
+						}]
+					}
+				}
+			}
+		}';
+		callSendAPI( $jsonData );
+	}
+
+	/**
+	 * Configure script indicators or send read receipts to warn users who are processing your request.
+	 *
+	 * @access public
+	 *
+	 * @param  String - "typing_on" ("typing_off"  o  "mark_seen")
+	 * @return void.
+	 */
+	public function sender_action($type='typing_on'){
+
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"sender_action": "'.$type.'",
+		}';
+		callSendAPI( $jsonData );
+	}
+
+	/*
+	 * Call the Send API. The message data goes in the body. If successful, we'll 
+	 * get the message id in a response 
+	 *
+	 */
+	public function callSendAPI( $messageData ){
+
+		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;
+		$ch = curl_init($url); //Initiate cURL.
+		
+		$jsonData = $messageData;
+		$jsonDataEncoded = $jsonData; //Encode the array into JSON.
+		curl_setopt($ch, CURLOPT_POST, 1); //Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded); //Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); //Set the content type to application/json
 		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-		//Execute the request
 		if(!empty($this->msg)){
-		    $result = curl_exec($ch);
+		    $result = curl_exec($ch); //Execute the request
 		}
-
 	}
 
 	/**
@@ -606,89 +721,6 @@ class ChatBot{
 
 		$this->send_response('No entiendo lo que dices :(');
 		$this->send_response('Quieres que te diga el clima o la hora');
-
-	}
-
-	/**
-	 * Configure script indicators or send read receipts to warn users who are processing your request.
-	 *
-	 * @access public
-	 *
-	 * @param  String - "typing_on" ("typing_off"  o  "mark_seen")
-	 * @return void.
-	 */
-	public function sender_action($type='typing_on'){
-
-		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;
-		//Initiate cURL.
-		$ch = curl_init($url);
-		//The JSON data.
-		$jsonData = '{
-			"recipient":{
-				"id":"'.$this->sender.'"
-			},
-			"sender_action": "'.$type.'",
-		}';
-
-		//Encode the array into JSON.
-		$jsonDataEncoded = $jsonData;
-		//Tell cURL that we want to send a POST request.
-		curl_setopt($ch, CURLOPT_POST, 1);
-		//Attach our encoded JSON string to the POST fields.
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-		//Execute the request
-		if(!empty($this->msg)){
-		    $result = curl_exec($ch);
-		}
-
-	}
-
-	/**
-	 * Send an image.
-	 *
-	 * @access public
-	 *
-	 * @param  String - image url 
-	 * @return void.
-	 */
-	public function send_image($url_img){
-
-		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$this->access_token;
-		//Initiate cURL.
-		$ch = curl_init($url);
-		//The JSON data.
-		$jsonData = '{
-			"recipient":{
-				"id":"'.$this->sender.'"
-			},
-			"message":{
-				"attachment":{
-					"type":"image",
-					"payload":{
-						"url":"'.$url_img.'"
-					}
-				}
-			}
-		}';
-
-		//"sender_action": "typing_on" ("typing_off"  o  "mark_seen")
-
-		//Encode the array into JSON.
-		$jsonDataEncoded = $jsonData;
-		//Tell cURL that we want to send a POST request.
-		curl_setopt($ch, CURLOPT_POST, 1);
-		//Attach our encoded JSON string to the POST fields.
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-		//Execute the request
-		if(!empty($this->msg)){
-		    $result = curl_exec($ch);
-		}
 
 	}
 
