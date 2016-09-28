@@ -128,11 +128,11 @@ class ChatBot{
 			"como estas" => "Excelente ¿y tú?",
 			"como te llamas" => "me llamo bot",
 			"eres un robot" => "eso no importa",
-			"cuantos años tienes" => "yo no cumplo años",
+			"cuantos años tienes" => "Tengo edad suficiente para chatear",
 			"me quieres" => "buscas el amor en el sitio equivocado",
 			"eres hombre o mujer" => "no tengo sexo",
 			"eres hombre" => "no tengo sexo",
-			"eres mujer" => "no tengo sexo",
+			"eres mujer" => "no tengo sexo"
 		);
 
 		$msg = $this->clean_string_question($this->message);
@@ -379,6 +379,33 @@ class ChatBot{
 		}
 
 
+	}
+
+	public function book(){
+
+		$question = array("recomiendame un libro","libro que me recomiendes","libro me recomiendas");
+
+		if( in_array( strtolower($this->message), $question ) ){
+
+			$this->sender_action();
+
+			$url = 'http://www.gandhi.com.mx/libros/los-mas-vendidos';
+
+			$html = file_get_html($url);
+			$book = $html->find('li[class=item first]')[0];
+			$img = $book->find('img')[0]->src;
+			$title = $book->find('h2[class=product-name]')[0]->find('a')[0]->plaintext;
+
+			$this->shorten_response($title);
+			$this->send_image($img);
+
+			return true;
+
+		}else{
+			
+			return false;
+		
+		}
 	}
 
 	/**
