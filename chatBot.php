@@ -112,6 +112,14 @@ class ChatBot{
 
 	}
 
+	/**
+	 * Basic Questions.
+	 *
+	 * @access public
+	 *
+	 * @param -----
+	 * @return true if it recognizes the question, false otherwise.
+	 */
 	public function basic_questions(){
 		
 		$this->sender_action();
@@ -122,7 +130,9 @@ class ChatBot{
 			"eres un robot" => "eso no importa",
 			"cuantos años tienes" => "yo no cumplo años",
 			"me quieres" => "buscas el amor en el sitio equivocado",
-			"eres hombre o mujer" => "no tengo sexo"
+			"eres hombre o mujer" => "no tengo sexo",
+			"eres hombre" => "no tengo sexo",
+			"eres mujer" => "no tengo sexo",
 		);
 
 		$msg = $this->clean_string_question($this->message);
@@ -340,6 +350,34 @@ class ChatBot{
 		} else {
 			return false;
 		}
+
+	}
+
+	public function joke(){
+
+		$this->sender_action();
+
+		$joke = array("dime un chiste", "cuentame un chiste", "un chiste");
+
+		if( in_array( strtolower($this->message), $joke ) ){
+
+			/*$url = 'https://chistesdiarios.wordpress.com/category/cortos/feed/';
+			$response_xml_data = file_get_contents($url);
+			$data = simplexml_load_string($response_xml_data);
+
+			$rd = rand(0, 9);
+
+			$answer = $this->clean_string( $data->channel->item[0]->description );*/
+
+			$this->shorten_response('La novia le dice al novio');
+			$this->shorten_response('- Amor amor, estoy embarazada, ¿qué te gustaría que fuera?');
+			$this->shorten_response('-¡Mentira!');
+			
+			return true;
+		}else{
+			return false;
+		}
+
 
 	}
 
