@@ -20,6 +20,11 @@ if ($bot->hub_verify_token === $bot->verify_token) {
 $bot->input   = json_decode(file_get_contents('php://input'), true);
 $bot->set_data_input();
 
+//$msg = $bot->msg;
+//$sender = $bot->sender;
+//$message = $bot->message;
+
+
 /**
  * Some Rules to validate incoming messages
  */
@@ -27,8 +32,7 @@ $bot->set_data_input();
 switch ($bot->messagingEvent) {
 	case 'receivedMessage':
 		
-		$bot->receivedMessage();
-		/*switch ($bot->type_message_received) {
+		switch ($bot->type_message_received) {
 			case 'message':
 				
 				if( $bot->greeting() ){
@@ -59,7 +63,7 @@ switch ($bot->messagingEvent) {
 			default:
 				$bot->whoops_message();
 				break;
-		}*/
+		}
 
 		break;
 	case 'receivedPostback':
