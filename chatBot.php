@@ -22,6 +22,8 @@ class ChatBot{
 	public $msg = '';
 	public $mid = '';  //Message identifier
 	public $seq = '';  //Message sequence number
+	public $appid = '';
+	public $metadata = '';
 
 	public $message = ''; //Text message
 	public $attachments = ''; //Array containing attachment data
@@ -53,6 +55,8 @@ class ChatBot{
 			$this->msg = $messaging['message'];
 			$this->mid = $messaging['message']['mid'];
 			$this->seq = $messaging['message']['seq'];
+			$this->appid = $messanging['message']['app_id'];
+			$this->metadata = $messanging['message']['metadata'];
 			
 			if( isset( $messaging['message']['text'] ) )
 			{
@@ -67,6 +71,9 @@ class ChatBot{
 				$this->attachmentType = $messaging['message']['attachments'][0]['type'];
 				$this->attachmentPayload = $messaging['message']['attachments'][0]['payload'];
 
+			}elseif( isset( $messaging['message']['quick_reply'] ) ){
+
+				$this->type_message_received = 'quick_reply';
 			}
 
 		} elseif( isset( $messaging['postback'] ) ){
@@ -76,6 +83,43 @@ class ChatBot{
 		} else {
 			$this->messagingEvent = '';
 		}
+	}
+
+	public function receivedMessage(){
+
+		switch ($this->type_message_received) {
+			case 'message':
+				
+				if( $this->greeting() ){
+					//=====Greeting=====
+				} elseif( $this->weather() ){
+					//=====Weather=====
+				} elseif( $this->current_time() ) {
+					//=====Date=====
+				} elseif( $this->horoscope() ) {
+					//=====Horoscope=====
+				} elseif( $this->exchange_rate() ) {
+					//=====Exchange rate=====
+				} elseif( $this->book() ) {
+					//=====Books=====
+				} elseif( $this->joke() ) {
+					//=====Joke=====
+				} elseif( $this->basic_questions() ){
+					//=====Basic Questions=====
+				} elseif( $this->yahoo_answer() ) {
+					//=====Answers=====
+				} else {
+					$this->whoops_message();
+				}
+				break;
+			case 'attachment':
+				$this->send_response("Archivo adjunto");
+				break;
+			default:
+				$this->whoops_message();
+				break;
+		}
+
 	}
 
 	/**
@@ -182,6 +226,7 @@ class ChatBot{
 				"Warm" => "Calido",
 				"Cold" => "Frio",
 				"Sunny" => "Soleado",
+				"Rain" => "Lluvioso",
 				"Cloudy" => "Nublado",
 				"Mostly Cloudy" => "Mayormente nublado",
 				"Partly Cloudy" => "Parcialmente nublado",
@@ -192,6 +237,7 @@ class ChatBot{
 				"Warm" => "Acuerdate del bloqueador",
 				"Cold" => "No se te olvide el abrigo",
 				"Sunny" => "Acuerdate del bloqueador",
+				"Rain" => "Te recomuendo usar tu impermeable",
 				"Cloudy" => "No se te olvide el paraguas",
 				"Mostly Cloudy" => "No se te olvide el paraguas",
 				"Partly Cloudy" => "No se te olvide el paraguas",
@@ -598,6 +644,10 @@ class ChatBot{
 		callSendAPI( $jsonData );
 	}
 
+	public function sendGenericMessage(){}
+	public function sendReceiptMessage(){}
+	public function sendQuickReply(){}
+
 	/**
 	 * Configure script indicators or send read receipts to warn users who are processing your request.
 	 *
@@ -613,6 +663,37 @@ class ChatBot{
 				"id":"'.$this->sender.'"
 			},
 			"sender_action": "'.$type.'",
+		}';
+		callSendAPI( $jsonData );
+	}
+
+	/**
+	 * Send a message with the account linking call-to-action
+	 *
+	 * @access public
+	 *
+	 * @param  -------
+	 * @return void.
+	 */
+	public function sendAccountLinking(){
+
+		$jsonData = '{
+			"recipient":{
+				"id":"'.$this->sender.'"
+			},
+			"message":{
+				"attachment":{
+					"type":"template",
+					"payload":{
+						"template_type":"button",
+						"text":"Welcome. Link your account.",
+						"buttons":[{
+							"type": "account_link",
+							"url": "/authorize",
+						}]
+					}
+				}
+			}
 		}';
 		callSendAPI( $jsonData );
 	}
